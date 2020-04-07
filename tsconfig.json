@@ -1,0 +1,15 @@
+{
+	"compilerOptions": {
+		"baseUrl": "src",
+		"esModuleInterop": true,
+		"paths": {
+			"@config/*": ["config/*"],
+			"@controllers/*": ["controllers/*"],
+			"@error/*": ["error/*"],
+			"@models/*": ["models/*"],
+			"@schema/*": ["services/*"],
+			"@utils/*": ["utils/*"]
+		},
+		"sourceMap": true
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"extends": ["plugin:@typescript-eslint/recommended"],
+	"rules": {
+		"semi": ["error", "always"],
+		"no-console": "warn",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/interface-name-prefix": "off",
+		"@typescript-eslint/no-namespace": "off",
+		"@typescript-eslint/ban-ts-ignore": "off"
+	},
+	"env": {
+		"node": true
+	},
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"sourceType": "module",
+		"ecmaVersion": 2020,
+		"ecmaFeatures": {
+			"modules": true
+		}
+	}
+}

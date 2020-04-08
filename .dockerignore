@@ -1,4 +1,4 @@
-build
+dist
 .DS_Store
 .env
 
@@ -10,8 +10,7 @@ npm-debug.log.*
 # dependencies
 node_modules
 
-# testing
-tests
+# test coverage
 coverage
 
 # token keys

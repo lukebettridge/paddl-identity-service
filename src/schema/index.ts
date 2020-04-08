@@ -57,21 +57,24 @@ schemaComposer.Mutation.addFields({
 			UserController.createUser(fields),
 		type: types.NotificationsTC
 	},
-	...authorization({
-		updateMe: {
-			args: {
-				fields: "UserUpdateMeInput!"
-			},
-			resolve: ({
-				args: { fields },
-				context: { req }
-			}): Promise<{ user: any; notifications: any[] }> => {
-				fields._id = req.user?._id;
-				return UserController.updateUser(fields);
-			},
-			type: types.UserAndNotificationsTC
-		}
-	})
+	...authorization(
+		{
+			updateMe: {
+				args: {
+					fields: "UserUpdateMeInput!"
+				},
+				resolve: ({
+					args: { fields },
+					context: { req }
+				}): Promise<{ user: any; notifications: any[] }> => {
+					fields._id = req.user?._id;
+					return UserController.updateUser(fields);
+				},
+				type: types.UserAndNotificationsTC
+			}
+		},
+		"readWrite"
+	)
 });
 
 export default schemaComposer.buildSchema();

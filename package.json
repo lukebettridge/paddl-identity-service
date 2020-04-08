@@ -1,7 +1,7 @@
 {
   "name": "paddl-identity-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "A service responsible for user authentication and self management.",
   "repository": {
     "type": "git",
     "url": "https://github.com/paddl-ltd/paddl-identity-service.git"
@@ -14,11 +14,11 @@
   },
   "main": "src/index.ts",
   "scripts": {
-    "build": "rm -rf build && NODE_ENV=production webpack -p --progress",
+    "build": "rm -rf dist && NODE_ENV=production webpack -p --progress",
     "coverage": "jest --coverage",
     "dev": "nodemon",
     "prettier": "prettier --write \"**/*.js\"",
-    "start": "node build",
+    "start": "node dist/main.*",
     "test": "jest"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "prettier": "^2.0.0",
     "ts-jest": "^25.3.1",
     "ts-loader": "^6.2.1",
-    "ts-node": "^8.8.1",
+    "ts-node": "^8.8.2",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^3.8.3",
     "webpack": "^4.42.0",

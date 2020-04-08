@@ -105,14 +105,19 @@ export const login = async (
 	req: Request,
 	res: Response
 ): Promise<{ token: string; user: any }> => {
-	let payload: { token: string; user: any };
-
 	const emailExists = await User.userExists({ email });
-	if (emailExists) {
-		payload = await User.sign({ email: email }, password, getPrivateKey());
-	} else {
+	if (!emailExists) {
 		throw new UserNotFound("The credentials you provided were incorrect");
+	} else {
+		const user = await User.getUser({ email });
+		if (!user.active) {
+			throw new UserNotFound(
+				"This user account has not been activated by an administrator"
+			);
+		}
 	}
+
+	const payload = await User.sign({ email: email }, password, getPrivateKey());
 
 	if (req.cookies?.refreshToken) {
 		await Session.removeSession(payload.user._id, req.cookies.refreshToken);
@@ -142,6 +147,12 @@ export const refreshTokens = async (
 	);
 
 	if (user && session && now.getTime() < session.expiryDate) {
+		if (!user.active) {
+			throw new UserNotFound(
+				"This user account has not been activated by an administrator"
+			);
+		}
+
 		const payload = await User.refreshAuthToken(
 			{ _id: user._id },
 			getPrivateKey()

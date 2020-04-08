@@ -36,8 +36,7 @@ app.use(
 		return {
 			context: { req, res },
 			customFormatErrorFn: (err: Error): any => {
-				// @ts-ignore
-				const operationalError = err.originalError;
+				const operationalError = err["originalError"];
 				if (operationalError instanceof OperationalError) {
 					return {
 						message: operationalError.message,
@@ -45,8 +44,7 @@ app.use(
 						type: operationalError.type
 					};
 				} else {
-					// @ts-ignore
-					err.type = err.constructor.name;
+					err["type"] = err.constructor.name;
 					return err;
 				}
 			},

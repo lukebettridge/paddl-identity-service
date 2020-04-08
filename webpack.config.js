@@ -18,8 +18,8 @@ module.exports = {
 		__dirname: false
 	},
 	output: {
-		path: path.resolve(__dirname, "build"),
-		filename: "index.js"
+		path: path.resolve(__dirname, "dist"),
+		filename: "[name].[hash:8].min.js"
 	},
 	resolve: {
 		alias: {

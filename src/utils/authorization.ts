@@ -17,17 +17,18 @@ export default (
 	resolvers: any,
 	role: "read" | "readWrite" | "userAdmin" | "appAdmin" = "read"
 ): object => {
-	Object.keys(resolvers).forEach(k => {
+	Object.keys(resolvers).forEach((k) => {
 		resolvers[k].name = k;
 		resolvers[k] = schemaComposer
 			.createResolver(resolvers[k])
-			.wrapResolve(next => async (rp): Promise<any> => {
+			.wrapResolve((next) => async (rp): Promise<any> => {
 				const { req } = rp.context;
 				const header = req.headers.authorization;
 
 				if (typeof header !== "undefined") {
 					const token = header.split(" ")[1];
 					const userDecrypted = await User.verify(token, getPublicKey());
+					console.log(userDecrypted);
 					const user = await User.getUser({ _id: userDecrypted._id });
 
 					if (!userHasRole(user, role)) {

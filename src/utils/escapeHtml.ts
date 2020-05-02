@@ -1,5 +1,5 @@
 /**
- * Escape unsafe string from HTML injection to protect users from XSS attacks.
+ * Escape unsafe string from HTML injection to protect users from XSS attacks
  * @param  {string} unsafe
  * @returns {string} Safe string
  */

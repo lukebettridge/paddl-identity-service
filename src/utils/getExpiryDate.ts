@@ -1,5 +1,5 @@
 /**
- * Returns the expiry date of a new token from now onwards.
+ * Returns the expiry date of a new token from now onwards
  * @returns {Date}
  */
 export default (expiresIn: number): Date => {

@@ -1,7 +1,7 @@
 /**
- * Common errors raised by service functions under certain conditions. Should be handled within the application.
+ * Common errors raised by service functions under certain conditions. Should be handled within the application
  * @class
- * @classdesc Common errors raised by system.
+ * @classdesc Common errors raised by system
  */
 export default class OperationalError extends Error {
 	public message: string;
@@ -16,7 +16,7 @@ export default class OperationalError extends Error {
 }
 
 /**
- * Email already exists in the database.
+ * Email already exists in the database
  * @export
  * @class EmailAlreadyExistsError
  * @extends {OperationalError}
@@ -29,7 +29,7 @@ export class EmailAlreadyExistsError extends OperationalError {
 }
 
 /**
- * Encryption failed.
+ * Encryption failed
  * @export
  * @class EncryptionFailedError
  * @extends {OperationalError}
@@ -42,7 +42,7 @@ export class EncryptionFailedError extends OperationalError {
 }
 
 /**
- * User not found.
+ * User not found
  * @export
  * @class UserNotFound
  * @extends {OperationalError}
@@ -55,7 +55,7 @@ export class UserNotFound extends OperationalError {
 }
 
 /**
- * User update does not pass validation.
+ * User update does not pass validation
  * @export
  * @class UserValidationError
  * @extends {OperationalError}

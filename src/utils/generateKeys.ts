@@ -1,7 +1,7 @@
 import { generateKeyPairSync } from "crypto";
 
 /**
- * Generating rsa public and private keys.
+ * Generating rsa public and private keys
  * @returns {{ publicKey: string; privateKey: string }}
  */
 export default (): { publicKey: string; privateKey: string } => {

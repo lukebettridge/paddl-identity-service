@@ -15,26 +15,22 @@ interface Notification {
 }
 
 /**
- * Return true if user issuing the request is logged in.
+ * Return true if user issuing the request is logged in
  * @param  {Request} req
  * @returns {boolean} user is logged in
  */
 export const isUserLoggedIn = (req: Request): boolean => req.user !== undefined;
 
 /**
- * Returns true if email is not already taken by another user.
+ * Returns true if email is not already taken by another user
  * @param  {string} email
- * @returns {Promise<{ isAvailable: boolean }>} promise to boolean result
+ * @returns {Promise<boolean>} promise to boolean result
  */
-export const checkEmailAvailable = async (
-	email: string
-): Promise<{ isAvailable: boolean }> => {
-	const emailExists = await User.userExists({ email });
-	return { isAvailable: !emailExists };
-};
+export const isEmailAvailable = async (email: string): Promise<boolean> =>
+	!(await User.userExists({ email }));
 
 /**
- * Create a new user.
+ * Create a new user
  * @throws {EmailAlreadyExistsError}
  * @throws {UserValidationError}
  * @param  {any} user
@@ -77,7 +73,7 @@ export const createUser = async (
 };
 
 /**
- * Returns the user data for a given ID.
+ * Returns the user data for a given ID
  * @throws {UserNotFound} User does not exist
  * @param  {string} userId
  * @returns {Promise<{ user: any }>} Promise to user data
@@ -91,9 +87,9 @@ export const getUserById = async (userId: string): Promise<{ user: any }> => {
 };
 
 /**
- * User login.
- * @throws {UserNotFound}
- * @param  {string} loginStr
+ * User login
+ * @throws {UserNotFound} User suspended or does not exist
+ * @param  {string} email
  * @param  {string} password
  * @param  {Request} req
  * @param  {Response} res
@@ -116,7 +112,6 @@ export const login = async (
 			);
 		}
 	}
-
 	const payload = await User.sign({ email: email }, password, getPrivateKey());
 
 	if (req.cookies?.refreshToken) {
@@ -126,13 +121,12 @@ export const login = async (
 
 	const { refreshToken } = await Session.createSession(payload.user._id);
 	res.cookie("refreshToken", refreshToken, { httpOnly: true });
-
 	return payload;
 };
 
 /**
- * Refresh the auth token and the refresh token.
- * @throws {UserNotFound}
+ * Refresh the auth token and the refresh token
+ * @throws {UserNotFound} User is suspended or refresh token has expired
  * @param  {Request} req
  * @param  {Response} res
  * @returns {Promise<{ token: string; expiryDate: Date }>} Promise to new auth token and expiry date
@@ -167,14 +161,14 @@ export const refreshTokens = async (
 
 		return payload;
 	} else {
-		// Refresh token has expired so we can't generate a new auth token
+		// Refresh token has expired
 		throw new UserNotFound("Your session has expired, please login");
 	}
 };
 
 /**
- * Update the user data for a given ID.
- * @throws {UserNotFound}
+ * Update the user data for a given ID
+ * @throws {UserNotFound} User does not exist
  * @throws {EmailAlreadyExistsError}
  * @throws {UserValidationError}
  * @param  {any} user

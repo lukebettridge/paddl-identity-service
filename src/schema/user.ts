@@ -67,21 +67,21 @@ const UserSchema = {
 };
 
 /**
- * List of private fields. Fields that are private to users (like email address) and not shared with the public queries (`userById`, `userMany`...) of the API .
+ * Fields that are private to users (e.g. email) and not shared with the public queries
  */
 const privateFields: string[] = Object.keys(UserSchema).filter(
 	(x) => !UserSchema[x].isPublic
 );
 
 /**
- * List of internal fields. Fields that are internal to the system, nobody can access it (like user password hash and salt).
+ * Fields that are internal to the system (like user password hash and salt)
  */
 const internalFields: string[] = Object.keys(UserSchema).filter(
 	(x) => UserSchema[x].isInternal
 );
 
 /**
- * List of uneditable fields. Users can't change the value of those fields (like if the user is `verified`)
+ * Users can't change the value of these fields (like if the user is `active`)
  */
 const uneditableFields: string[] = Object.keys(UserSchema).filter(
 	(x) => UserSchema[x].isUneditable

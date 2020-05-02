@@ -6,13 +6,13 @@ import * as UserController from "../controllers/user";
 import * as types from "./types";
 
 schemaComposer.Query.addFields({
-	emailAvailable: {
+	isEmailAvailable: {
 		args: {
 			email: "String!"
 		},
-		resolve: (_, { email }): Promise<{ isAvailable: boolean }> =>
-			UserController.checkEmailAvailable(email),
-		type: types.IsAvailableTC
+		resolve: (_, { email }): Promise<boolean> =>
+			UserController.isEmailAvailable(email),
+		type: "Boolean!"
 	},
 	publicKey: {
 		resolve: (): string => getPublicKey(),

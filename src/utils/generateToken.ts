@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 /**
- * Return a token of size `tokenLength`.
+ * Return a token of size `tokenLength`
  * @param  {number} [tokenLength]
  * @returns {string} token generated
  */

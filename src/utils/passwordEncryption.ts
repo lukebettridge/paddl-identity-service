@@ -5,7 +5,7 @@ const HASH_LENGTH = 64; // Length of the hash, in bytes
 const HASH_ITERATIONS = 128;
 
 /**
- * Encrypting `password` with the given `salt`. Returning hash and salt.
+ * Encrypting `password` with the given `salt`. Returning hash and salt
  * @param  {string} password
  * @param  {Buffer} salt
  * @returns {Promise<{ salt: string; hash: string }>} Promise to the password encrypted hash and salt

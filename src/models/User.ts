@@ -28,7 +28,6 @@ export interface IUserModel extends Model<any> {
 
 	/**
 	 * Fetch user according to `filter`
-	 * @throws {UnauthorizedError}
 	 * @param  {any} filter
 	 * @returns {Promise<any>} Promise to the user fetched
 	 */
@@ -43,23 +42,12 @@ export interface IUserModel extends Model<any> {
 	getUserNonInternalFields(filter: any): Promise<any>;
 
 	/**
-	 * Returns true if `password` is valid for the user selected by `filter`
-	 * @param  {any} filter
+	 * Returns true if `password` is valid for the passed user
+	 * @param  {any} user
 	 * @param  {string} password
 	 * @returns {Promise<boolean>} Promise to the result
 	 */
-	isPasswordValid(filter: any, password: string): Promise<boolean>;
-
-	/**
-	 * Returns a new authentication token. Should be called only after checking that user refresh token set within cookies is valid
-	 * @param  {any} filter
-	 * @param  {string} privateKey
-	 * @returns {Promise<{ token: string; expiryDate: Date }>}
-	 */
-	refreshAuthToken(
-		filter: any,
-		privateKey: string
-	): Promise<{ token: string; expiryDate: Date }>;
+	isPasswordValid(user: any, password: string): Promise<boolean>;
 
 	/**
 	 * Remove user selected by `filter`
@@ -69,18 +57,15 @@ export interface IUserModel extends Model<any> {
 	removeUser(filter: any): Promise<void>;
 
 	/**
-	 * Sign user selected by `filter`
-	 * @throws {UnauthorizedError}
-	 * @param  {any} filter
-	 * @param  {string} password
+	 * Sign user
+	 * @param  {any} user
 	 * @param  {string} privateKey
-	 * @returns {Promise<{ user: any; token: string; expiryDate: Date }>} Promise to the `user` data, authentication `token` and it's `expiryDate`
+	 * @returns {Promise<{ expiryDate: Date; token: string }>} Promise to the authentication `token` and it's `expiryDate`
 	 */
 	sign(
-		filter: any,
-		password: string,
+		user: any,
 		privateKey: string
-	): Promise<{ user: any; token: string; expiryDate: Date }>;
+	): Promise<{ expiryDate: Date; token: string }>;
 
 	/**
 	 * @throws {InternalServerError}
@@ -143,10 +128,11 @@ User.statics.createUser = async function (data: any): Promise<void> {
 
 /** @see {@link UserModel#getUser} */
 User.statics.getUser = async function (filter: any): Promise<any> {
-	return this.findOne(filter).then((user: any) => {
-		if (user === null) throw new UnauthorizedError("User could not be found");
-		return user;
-	});
+	return this.findOne(filter)
+		.lean()
+		.then((user: any) => {
+			return user;
+		});
 };
 
 /** @see {@link UserModel#getUserNonInternalFields} */
@@ -166,34 +152,12 @@ User.statics.getUserNonInternalFields = async function (
 
 /** @see {@link UserModel#isPasswordValid} */
 User.statics.isPasswordValid = async function (
-	filter: any,
+	user: any,
 	password: string
 ): Promise<boolean> {
-	let user: any;
-	return this.getUser(filter)
-		.then((userFound: any) => {
-			user = userFound;
-			return passwordEncryption.hash(password, user.passwordSalt);
-		})
-		.then((results: any) => {
-			return results.hash === user.password;
-		});
-};
-
-/** @see {@link IUserModel#refreshAuthToken} */
-User.statics.refreshAuthToken = async function (
-	filter: any,
-	privateKey: string
-): Promise<{ token: string; expiryDate: Date }> {
-	const authTokenExpiryTime =
-		parseInt(process.env.AUTH_TOKEN_EXPIRY_TIME) ||
-		DEFAULT_AUTH_TOKEN_EXPIRY_TIME;
-	const user = await this.getUserNonInternalFields(filter);
-
-	const expiryDate = getExpiryDate(authTokenExpiryTime);
-	const token = await generateUserToken(user, privateKey, authTokenExpiryTime);
-
-	return { token, expiryDate };
+	return passwordEncryption
+		.hash(password, user.passwordSalt)
+		.then((results: any) => results.hash === user.password);
 };
 
 /** @see {@link UserModel#removeUser} */
@@ -203,23 +167,17 @@ User.statics.removeUser = function (filter: any): Promise<void> {
 
 /** @see {@link IUserModel#sign} */
 User.statics.sign = async function (
-	filter: any,
-	password: string,
+	user: any,
 	privateKey: string
-): Promise<{ user: any; token: string; expiryDate: Date }> {
-	const isPasswordValid = await this.isPasswordValid(filter, password);
-	if (!isPasswordValid)
-		throw new UnauthorizedError("The credentials you provided were incorrect");
-
+): Promise<{ expiryDate: Date; token: string }> {
 	const authTokenExpiryTime =
 		parseInt(process.env.AUTH_TOKEN_EXPIRY_TIME) ||
 		DEFAULT_AUTH_TOKEN_EXPIRY_TIME;
-	const user = await this.getUserNonInternalFields(filter);
 
 	const expiryDate = getExpiryDate(authTokenExpiryTime);
 	const token = await generateUserToken(user, privateKey, authTokenExpiryTime);
 
-	return { user, token, expiryDate };
+	return { expiryDate, token };
 };
 
 /** @see {@link UserModel#updateUser} */

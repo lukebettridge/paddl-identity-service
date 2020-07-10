@@ -31,7 +31,7 @@ export default (
 					console.log(userDecrypted);
 					const user = await User.getUser({ _id: userDecrypted._id });
 
-					if (!userHasRole(user, role)) {
+					if (user === null || !userHasRole(user, role)) {
 						throw new UnauthorizedError(
 							"You are not authorized to perform this action"
 						);

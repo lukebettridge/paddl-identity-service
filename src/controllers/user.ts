@@ -99,27 +99,31 @@ export const login = async (
 	req: Request,
 	res: Response
 ): Promise<{ token: string; user: any }> => {
-	const emailExists = await User.userExists({ email });
-	if (!emailExists) {
+	const user = await User.getUser({ email });
+	if (user === null) {
 		throw new UnauthorizedError("The credentials you provided were incorrect");
-	} else {
-		const user = await User.getUser({ email });
-		if (!user.active) {
-			throw new UnauthorizedError(
-				"This user account has not been activated by an administrator"
-			);
-		}
 	}
-	const payload = await User.sign({ email: email }, password, getPrivateKey());
+
+	const isPasswordValid = await User.isPasswordValid(user, password);
+	if (!isPasswordValid) {
+		throw new UnauthorizedError("The credentials you provided were incorrect");
+	}
+
+	if (!user.active) {
+		throw new UnauthorizedError(
+			"This user account has not been activated by an administrator"
+		);
+	}
+	const payload = await User.sign(user, getPrivateKey());
 
 	if (req.cookies?.refreshToken) {
-		await Session.removeSession(payload.user._id, req.cookies.refreshToken);
+		await Session.removeSession(user._id, req.cookies.refreshToken);
 	}
-	await Session.removeOutdatedSessions(payload.user._id);
+	await Session.removeOutdatedSessions(user._id);
 
-	const { refreshToken } = await Session.createSession(payload.user._id);
+	const { refreshToken } = await Session.createSession(user._id);
 	res.cookie("refreshToken", refreshToken, { httpOnly: true });
-	return payload;
+	return { ...payload, user };
 };
 
 /**
@@ -127,12 +131,12 @@ export const login = async (
  * @throws {UnauthorizedError} User is suspended or refresh token has expired
  * @param  {Request} req
  * @param  {Response} res
- * @returns {Promise<{ token: string; expiryDate: Date }>} Promise to new auth token and expiry date
+ * @returns {Promise<{ expiryDate: Date; token: string }>} Promise to new auth token and expiry date
  */
 export const refreshTokens = async (
 	req: Request,
 	res: Response
-): Promise<{ token: string; expiryDate: Date }> => {
+): Promise<{ expiryDate: Date; token: string }> => {
 	const now = new Date();
 	const { user, session } = await Session.getUserAndSessionFromRefreshToken(
 		req.cookies.refreshToken
@@ -145,10 +149,7 @@ export const refreshTokens = async (
 			);
 		}
 
-		const payload = await User.refreshAuthToken(
-			{ _id: user._id },
-			getPrivateKey()
-		);
+		const { expiryDate, token } = await User.sign(user, getPrivateKey());
 
 		// Generate a new refresh token and invalidate the old one
 		const { refreshToken } = await Session.updateSession(
@@ -157,7 +158,7 @@ export const refreshTokens = async (
 		);
 		res.cookie("refreshToken", refreshToken, { httpOnly: true });
 
-		return payload;
+		return { expiryDate, token };
 	} else {
 		// Refresh token has expired
 		throw new UnauthorizedError("Your session has expired, please login");

@@ -16,12 +16,12 @@ export default class OperationalError extends Error {
 }
 
 /**
- * Email already exists in the database
+ * Operation was forbidden
  * @export
- * @class EmailAlreadyExistsError
+ * @class ForbiddenError
  * @extends {OperationalError}
  */
-export class EmailAlreadyExistsError extends OperationalError {
+export class ForbiddenError extends OperationalError {
 	constructor(message: string, type?: string) {
 		super(message, type);
 		this.statusCode = 403;
@@ -29,12 +29,12 @@ export class EmailAlreadyExistsError extends OperationalError {
 }
 
 /**
- * Encryption failed
+ * Server error occurred during operation
  * @export
- * @class EncryptionFailedError
+ * @class InternalServerError
  * @extends {OperationalError}
  */
-export class EncryptionFailedError extends OperationalError {
+export class InternalServerError extends OperationalError {
 	constructor(message: string, type?: string) {
 		super(message, type);
 		this.statusCode = 500;
@@ -42,12 +42,12 @@ export class EncryptionFailedError extends OperationalError {
 }
 
 /**
- * User not found
+ * Operation could not be authenticated
  * @export
- * @class UserNotFound
+ * @class UnauthorizedError
  * @extends {OperationalError}
  */
-export class UserNotFound extends OperationalError {
+export class UnauthorizedError extends OperationalError {
 	constructor(message: string, type?: string) {
 		super(message, type);
 		this.statusCode = 401;
@@ -55,12 +55,12 @@ export class UserNotFound extends OperationalError {
 }
 
 /**
- * User update does not pass validation
+ * Operation could not be processed
  * @export
- * @class UserValidationError
+ * @class BadRequestError
  * @extends {OperationalError}
  */
-export class UserValidationError extends OperationalError {
+export class BadRequestError extends OperationalError {
 	constructor(message: string, type?: string) {
 		super(message, type);
 		this.statusCode = 400;

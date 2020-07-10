@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 
 import { getPrivateKey } from "../config/keys";
 import {
-	EmailAlreadyExistsError,
-	UserNotFound,
-	UserValidationError
+	ForbiddenError,
+	UnauthorizedError,
+	BadRequestError
 } from "../error/ErrorTypes";
 import Session from "../models/Session";
 import User from "../models/User";
@@ -15,24 +15,24 @@ interface Notification {
 }
 
 /**
- * Return true if user issuing the request is logged in
+ * Returns true if user issuing the request is logged in
  * @param  {Request} req
- * @returns {boolean} user is logged in
+ * @returns {boolean} User is logged in
  */
-export const isUserLoggedIn = (req: Request): boolean => req.user !== undefined;
+export const isUserLoggedIn = (req: Request): boolean => !!req.user;
 
 /**
  * Returns true if email is not already taken by another user
  * @param  {string} email
- * @returns {Promise<boolean>} promise to boolean result
+ * @returns {Promise<boolean>} Promise to boolean result
  */
 export const isEmailAvailable = async (email: string): Promise<boolean> =>
 	!(await User.userExists({ email }));
 
 /**
- * Create a new user
- * @throws {EmailAlreadyExistsError}
- * @throws {UserValidationError}
+ * Creates a new user
+ * @throws {ForbiddenError}
+ * @throws {BadRequestError}
  * @param  {any} user
  * @returns {Promise<{ user: any; notifications: Notification[] }>} Promise to new user data and notifications
  */
@@ -42,13 +42,11 @@ export const createUser = async (
 	const notifications: Notification[] = [];
 
 	if (!user.password) {
-		throw new UserValidationError("Password is a required field");
+		throw new BadRequestError("Password is a required field");
 	}
 
 	if (user.password.length < 8) {
-		throw new UserValidationError(
-			"Password must contain at least 8 characters"
-		);
+		throw new BadRequestError("Password must contain at least 8 characters");
 	}
 	try {
 		await User.createUser(user);
@@ -62,11 +60,11 @@ export const createUser = async (
 			err.message.includes("email") &&
 			err.message.includes("duplicate key")
 		) {
-			throw new EmailAlreadyExistsError(
+			throw new ForbiddenError(
 				"An account already exists with the email address you provided"
 			);
 		}
-		throw new UserValidationError(
+		throw new BadRequestError(
 			err.message.replace("user validation failed: email: Path ", "")
 		);
 	}
@@ -74,21 +72,21 @@ export const createUser = async (
 
 /**
  * Returns the user data for a given ID
- * @throws {UserNotFound} User does not exist
+ * @throws {UnauthorizedError} User does not exist
  * @param  {string} userId
  * @returns {Promise<{ user: any }>} Promise to user data
  */
 export const getUserById = async (userId: string): Promise<{ user: any }> => {
 	try {
-		return await User.getUser({ _id: userId });
+		return await User.getUserNonInternalFields({ _id: userId });
 	} catch (err) {
-		throw new UserNotFound("User could not be found");
+		throw new UnauthorizedError("User could not be found");
 	}
 };
 
 /**
- * User login
- * @throws {UserNotFound} User suspended or does not exist
+ * Authenticates a user
+ * @throws {UnauthorizedError} User suspended or does not exist
  * @param  {string} email
  * @param  {string} password
  * @param  {Request} req
@@ -103,11 +101,11 @@ export const login = async (
 ): Promise<{ token: string; user: any }> => {
 	const emailExists = await User.userExists({ email });
 	if (!emailExists) {
-		throw new UserNotFound("The credentials you provided were incorrect");
+		throw new UnauthorizedError("The credentials you provided were incorrect");
 	} else {
 		const user = await User.getUser({ email });
 		if (!user.active) {
-			throw new UserNotFound(
+			throw new UnauthorizedError(
 				"This user account has not been activated by an administrator"
 			);
 		}
@@ -126,7 +124,7 @@ export const login = async (
 
 /**
  * Refresh the auth token and the refresh token
- * @throws {UserNotFound} User is suspended or refresh token has expired
+ * @throws {UnauthorizedError} User is suspended or refresh token has expired
  * @param  {Request} req
  * @param  {Response} res
  * @returns {Promise<{ token: string; expiryDate: Date }>} Promise to new auth token and expiry date
@@ -142,7 +140,7 @@ export const refreshTokens = async (
 
 	if (user && session && now.getTime() < session.expiryDate) {
 		if (!user.active) {
-			throw new UserNotFound(
+			throw new UnauthorizedError(
 				"This user account has not been activated by an administrator"
 			);
 		}
@@ -162,15 +160,15 @@ export const refreshTokens = async (
 		return payload;
 	} else {
 		// Refresh token has expired
-		throw new UserNotFound("Your session has expired, please login");
+		throw new UnauthorizedError("Your session has expired, please login");
 	}
 };
 
 /**
  * Update the user data for a given ID
- * @throws {UserNotFound} User does not exist
- * @throws {EmailAlreadyExistsError}
- * @throws {UserValidationError}
+ * @throws {UnauthorizedError} User does not exist
+ * @throws {ForbiddenError}
+ * @throws {BadRequestError}
  * @param  {any} user
  * @returns {Promise<{ user: any; notifications: Notification[] }>} Promise to user data and notifications
  */
@@ -181,7 +179,7 @@ export const updateUser = async (
 	try {
 		const exists = await User.userExists({ _id: user._id });
 		if (!exists) {
-			throw new UserNotFound("User could not be found");
+			throw new UnauthorizedError("User could not be found");
 		}
 
 		await User.updateUser({ _id: user._id }, user);
@@ -197,11 +195,11 @@ export const updateUser = async (
 			err.message.includes("email") &&
 			err.message.includes("duplicate key")
 		) {
-			throw new EmailAlreadyExistsError(
+			throw new ForbiddenError(
 				"An account already exists with the email address you provided"
 			);
 		}
-		throw new UserValidationError(
+		throw new BadRequestError(
 			err.message.replace("user validation failed: email: ", "")
 		);
 	}

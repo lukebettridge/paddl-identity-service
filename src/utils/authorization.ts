@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { schemaComposer } from "graphql-compose";
 
-import { UserNotFound } from "../error/ErrorTypes";
+import { UnauthorizedError } from "../error/ErrorTypes";
 import { getPublicKey } from "../config/keys";
 import User from "../models/User";
 
@@ -32,13 +32,13 @@ export default (
 					const user = await User.getUser({ _id: userDecrypted._id });
 
 					if (!userHasRole(user, role)) {
-						throw new UserNotFound(
+						throw new UnauthorizedError(
 							"You are not authorized to perform this action"
 						);
 					}
 					req.user = user;
 				} else {
-					throw new UserNotFound(
+					throw new UnauthorizedError(
 						"You must be logged in to perform this action"
 					);
 				}

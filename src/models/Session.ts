@@ -1,7 +1,7 @@
 import { Document, model, Model, Schema } from "mongoose";
 
 import { generateToken, getExpiryDate } from "../utils";
-import { UserNotFound } from "../error/ErrorTypes";
+import { UnauthorizedError } from "../error/ErrorTypes";
 import { SessionSchema } from "../schema/session";
 
 const DEFAULT_REFRESH_TOKEN_EXPIRY_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -18,7 +18,7 @@ export interface ISessionModel extends Model<any, {}> {
 
 	/**
 	 * Returns the user and session corresponding to the refresh token
-	 * @throws {UserNotFound}
+	 * @throws {UnauthorizedError}
 	 * @param  {string} userId
 	 * @returns {Promise<any>} Returns the user and session corresponding to the refresh token
 	 */
@@ -107,7 +107,7 @@ Session.statics.getUserAndSessionFromRefreshToken = async function (
 	) {
 		return { user: aggregate[0].user[0], session: aggregate[0] };
 	} else {
-		throw new UserNotFound("Your session has expired, please login");
+		throw new UnauthorizedError("Your session has expired, please login");
 	}
 };
 

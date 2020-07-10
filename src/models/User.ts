@@ -7,7 +7,7 @@ import {
 	getExpiryDate,
 	passwordEncryption
 } from "../utils";
-import { EncryptionFailedError, UserNotFound } from "../error/ErrorTypes";
+import { InternalServerError, UnauthorizedError } from "../error/ErrorTypes";
 import { internalFields, UserSchema } from "../schema/user";
 
 const DEFAULT_AUTH_TOKEN_EXPIRY_TIME = 15 * 60 * 1000; // 15 minutes
@@ -19,8 +19,8 @@ internalFields.map((x) => internalFieldsMap.set(x, true));
 
 export interface IUserModel extends Model<any> {
 	/**
-	 * Create user from `data`
-	 * @throws {EncryptionFailedError} Password encryption failed
+	 * Creates a user from `data`
+	 * @throws {InternalServerError} Password encryption failed
 	 * @param  {any} data
 	 * @returns {Promise<any>}
 	 */
@@ -28,15 +28,15 @@ export interface IUserModel extends Model<any> {
 
 	/**
 	 * Fetch user according to `filter`
-	 * @throws {UserNotFound}
+	 * @throws {UnauthorizedError}
 	 * @param  {any} filter
 	 * @returns {Promise<any>} Promise to the user fetched
 	 */
 	getUser(filter: any): Promise<any>;
 
 	/**
-	 * Return private and public user fields, user selected by `filter`
-	 * @throws {UserNotFound}
+	 * Returns private and public user fields, user selected by `filter`
+	 * @throws {UnauthorizedError}
 	 * @param  {any} filter
 	 * @returns {Promise<any>} Promise to the user fetched
 	 */
@@ -70,7 +70,7 @@ export interface IUserModel extends Model<any> {
 
 	/**
 	 * Sign user selected by `filter`
-	 * @throws {UserNotFound}
+	 * @throws {UnauthorizedError}
 	 * @param  {any} filter
 	 * @param  {string} password
 	 * @param  {string} privateKey
@@ -83,7 +83,7 @@ export interface IUserModel extends Model<any> {
 	): Promise<{ user: any; token: string; expiryDate: Date }>;
 
 	/**
-	 * @throws {EncryptionFailedError}
+	 * @throws {InternalServerError}
 	 * Update user data selected by `filter`
 	 * @param  {any} filter
 	 * @param  {any} data
@@ -101,7 +101,7 @@ export interface IUserModel extends Model<any> {
 	/**
 	 * Decrypt user authentication token with the `publicKey`
 	 * Returns the user data decrypted
-	 * @throws {UserNotFound} Token not valid
+	 * @throws {UnauthorizedError} Token not valid
 	 * @param  {string} token
 	 * @param  {string} publicKey
 	 * @returns {Promise<object | string>} Promise to the user data decrypted
@@ -136,7 +136,7 @@ User.statics.createUser = async function (data: any): Promise<void> {
 			return user.save();
 		},
 		(err) => {
-			throw new EncryptionFailedError("Password encryption failed :" + err);
+			throw new InternalServerError("Password encryption failed :" + err);
 		}
 	);
 };
@@ -144,7 +144,7 @@ User.statics.createUser = async function (data: any): Promise<void> {
 /** @see {@link UserModel#getUser} */
 User.statics.getUser = async function (filter: any): Promise<any> {
 	return this.findOne(filter).then((user: any) => {
-		if (user === null) throw new UserNotFound("User could not be found");
+		if (user === null) throw new UnauthorizedError("User could not be found");
 		return user;
 	});
 };
@@ -158,7 +158,7 @@ User.statics.getUserNonInternalFields = async function (
 		.lean()
 		.then((user: any) => {
 			if (user === null) {
-				throw new UserNotFound("User could not be found");
+				throw new UnauthorizedError("User could not be found");
 			}
 			return user;
 		});
@@ -209,7 +209,7 @@ User.statics.sign = async function (
 ): Promise<{ user: any; token: string; expiryDate: Date }> {
 	const isPasswordValid = await this.isPasswordValid(filter, password);
 	if (!isPasswordValid)
-		throw new UserNotFound("The credentials you provided were incorrect");
+		throw new UnauthorizedError("The credentials you provided were incorrect");
 
 	const authTokenExpiryTime =
 		parseInt(process.env.AUTH_TOKEN_EXPIRY_TIME) ||
@@ -236,7 +236,7 @@ User.statics.updateUser = async function (
 				passwordSalt: results.salt
 			};
 		} catch (err) {
-			throw new EncryptionFailedError("Password encryption failed :" + err);
+			throw new InternalServerError("Password encryption failed :" + err);
 		}
 	}
 
@@ -266,7 +266,9 @@ User.statics.verify = function (
 			{ algorithms: ["RS256"] },
 			async (err, userDecrypted) => {
 				if (err)
-					reject(new UserNotFound("There was an error verifying your session"));
+					reject(
+						new UnauthorizedError("There was an error verifying your session")
+					);
 				else resolve(userDecrypted);
 			}
 		);

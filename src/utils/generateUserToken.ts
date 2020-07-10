@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 
-import { UserNotFound } from "../error/ErrorTypes";
+import { UnauthorizedError } from "../error/ErrorTypes";
 
 /**
- * Generaet user's JWT encoding the `user` data with the `privateKey`. This authentication token will be valid for `expiresIn` number of milliseconds
+ * Generate user's JWT encoding the `user` data with the `privateKey`. This authentication token will be valid for `expiresIn` number of milliseconds
  * @param  {any} user
  * @param  {string} privateKey
  * @param  {number} expiresIn
@@ -24,7 +24,7 @@ export default (
 			},
 			async (err, token) => {
 				if (err) {
-					reject(new UserNotFound(err.message));
+					reject(new UnauthorizedError(err.message));
 				} else {
 					resolve(token);
 				}

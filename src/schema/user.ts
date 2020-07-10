@@ -47,6 +47,7 @@ const UserSchema = {
 		default: [{ app: "default", role: "read" }],
 		isInternal: true,
 		isPublic: false,
+		isUneditable: true,
 		required: true,
 		type: [
 			{
@@ -62,6 +63,7 @@ const UserSchema = {
 		default: false,
 		isInternal: true,
 		isPublic: false,
+		isUneditable: true,
 		type: Boolean
 	}
 };

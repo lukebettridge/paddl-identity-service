@@ -1,4 +1,3 @@
-import IsAvailableTC from "./IsAvailableTC";
 import NotificationTC from "./NotificationTC";
 import NotificationsTC from "./NotificationsTC";
 import NotificationTypeTC from "./NotificationTypeTC";
@@ -12,7 +11,6 @@ import UserUpdateMeInputTC from "./UserUpdateMeInputTC";
 import UserTC from "./UserTC";
 
 export {
-	IsAvailableTC,
 	NotificationTC,
 	NotificationsTC,
 	NotificationTypeTC,

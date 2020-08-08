@@ -1,69 +1,16 @@
-import { Document, model, Model, Schema } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 
+import { ISessionModel } from "./ISession";
 import { generateToken, getExpiryDate } from "../utils";
 import { UnauthorizedError } from "../error/ErrorTypes";
 import { SessionSchema } from "../schema/session";
 
 const DEFAULT_REFRESH_TOKEN_EXPIRY_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-export interface ISessionModel extends Model<any, {}> {
-	/**
-	 * Create a refresh token for the given user ID
-	 * @param  {string} userId
-	 * @returns {Promise<{refreshToken: string, expiryDate: Date}>} Returns the refresh token and it's expiry date
-	 */
-	createSession(
-		userId: string
-	): Promise<{ refreshToken: string; expiryDate: Date }>;
-
-	/**
-	 * Returns the user and session corresponding to the refresh token
-	 * @throws {UnauthorizedError}
-	 * @param  {string} userId
-	 * @returns {Promise<any>} Returns the user and session corresponding to the refresh token
-	 */
-	getUserAndSessionFromRefreshToken(refreshToken: string): Promise<any>;
-
-	/**
-	 * Returns true if the refresh token exists for the given user ID
-	 * @param  {string} userId
-	 * @param  {string} refreshToken
-	 * @returns {Promise<boolean>} Promise to the boolean result
-	 */
-	isValid(userId: string, refreshToken: string): Promise<boolean>;
-
-	/**
-	 * Remove the outdated refresh tokens for the given user ID
-	 * @param  {string} userId
-	 * @returns {Promise<any>}
-	 */
-	removeOutdatedSessions(userId: string): Promise<any>;
-
-	/**
-	 * Remove the refresh token for the given user ID
-	 * @param  {string} userId
-	 * @param  {string} refreshToken
-	 * @returns {Promise<any>}
-	 */
-	removeSession(userId: string, refreshToken: string): Promise<any>;
-
-	/**
-	 * Update the refresh token by generating a new one with a new expiry date
-	 * @param  {string} userId
-	 * @param  {string} refreshToken
-	 * @returns {Promise<{ refreshToken: string, expiryDate: Date }>} Returns the refresh token and it's expiry date
-	 */
-	updateSession(
-		userId: string,
-		refreshToken: string
-	): Promise<{ refreshToken: string; expiryDate: Date }>;
-}
-
 const Session: Schema = new Schema(SessionSchema, {
 	collection: "sessions"
 });
 
-/** @see {@link SessionModel#createSession} */
 Session.statics.createSession = async function (
 	userId: string
 ): Promise<{ refreshToken: string; expiryDate: Date }> {
@@ -82,7 +29,6 @@ Session.statics.createSession = async function (
 	return { refreshToken: session.refreshToken, expiryDate: session.expiryDate };
 };
 
-/** @see {@link ISessionModel#getUserAndSessionFromRefreshToken} */
 Session.statics.getUserAndSessionFromRefreshToken = async function (
 	refreshToken: string
 ): Promise<{ session: any; user: any }> {
@@ -111,7 +57,6 @@ Session.statics.getUserAndSessionFromRefreshToken = async function (
 	}
 };
 
-/** @see {@link SessionModel#isValid} */
 Session.statics.isValid = async function (
 	userId: string,
 	refreshToken: string
@@ -124,7 +69,6 @@ Session.statics.isValid = async function (
 	}
 };
 
-/** @see {@link SessionModel#removeSession} */
 Session.statics.removeSession = async function (
 	userId: string,
 	refreshToken: string
@@ -132,14 +76,12 @@ Session.statics.removeSession = async function (
 	return await this.deleteOne({ userId, refreshToken });
 };
 
-/** @see {@link SessionModel#removeOutdatedSessions} */
 Session.statics.removeOutdatedSessions = async function (
 	userId: string
 ): Promise<any> {
 	return await this.deleteMany({ userId, expiryDate: { $lt: new Date() } });
 };
 
-/** @see {@link SessionModel#updateSession} */
 Session.statics.updateSession = async function (
 	userId: string,
 	refreshToken: string

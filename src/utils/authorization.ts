@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { schemaComposer } from "graphql-compose";
 
 import { UnauthorizedError } from "../error/ErrorTypes";
@@ -28,7 +27,6 @@ export default (
 				if (typeof header !== "undefined") {
 					const token = header.split(" ")[1];
 					const userDecrypted = await User.verify(token, getPublicKey());
-					console.log(userDecrypted);
 					const user = await User.getUser({ _id: userDecrypted._id });
 
 					if (user === null || !userHasRole(user, role)) {

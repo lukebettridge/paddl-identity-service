@@ -4,7 +4,7 @@
   "description": "A service responsible for user authentication and self management.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paddl-ltd/paddl-identity-service.git"
+    "url": "git+https://github.com/paddl-ltd/paddl-identity-service.git"
   },
   "license": "UNLICENSED",
   "author": {
@@ -30,7 +30,7 @@
     "graphql-compose": "^7.14.0",
     "graphql-compose-connection": "^6.0.4",
     "graphql-compose-mongoose": "^7.3.5",
-    "graphql-playground-middleware-express": "^1.7.12",
+    "graphql-playground-middleware-express": "^1.7.16",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.5"
   },
@@ -44,7 +44,7 @@
     "@typescript-eslint/parser": "^2.24.0",
     "eslint": "^6.8.0",
     "jest": "^25.2.7",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.4",
     "prettier": "^2.0.0",
     "ts-jest": "^25.3.1",
     "ts-loader": "^6.2.1",
